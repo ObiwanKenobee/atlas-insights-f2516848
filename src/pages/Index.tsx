@@ -134,6 +134,8 @@ const Index = () => {
           />
         </div>
 
+        <AnnotatedMap />
+
         <HumanImpactPanel
           narrative="Heat stress is likely to reduce outdoor labor capacity by 18% and increase clinic burden by 31% in three wards with low cooling access. The most vulnerable populations are informal settlement residents without mechanical cooling, outdoor laborers, and schoolchildren in poorly ventilated facilities."
           metrics={impactMetrics}
