@@ -6,6 +6,8 @@ import ScenarioComparator from "@/components/ScenarioComparator";
 import RoleToggle from "@/components/RoleToggle";
 import EvidenceDrawer from "@/components/EvidenceDrawer";
 import AnnotatedMap from "@/components/AnnotatedMap";
+import StoryMode from "@/components/StoryMode";
+import InflectionTimeline from "@/components/InflectionTimeline";
 import { Users, HeartPulse, Thermometer, Briefcase, ShieldAlert } from "lucide-react";
 import type { ImpactMetric } from "@/components/HumanImpactPanel";
 
