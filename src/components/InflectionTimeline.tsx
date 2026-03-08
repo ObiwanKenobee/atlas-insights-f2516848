@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, TrendingUp, TrendingDown, AlertTriangle, Minus } from "lucide-react";
 
-interface InflectionPoint {
+export interface InflectionPoint {
   date: string;
   label: string;
   description: string;
@@ -11,7 +11,7 @@ interface InflectionPoint {
   metric?: string;
 }
 
-const inflections: InflectionPoint[] = [
+export const defaultInflections: InflectionPoint[] = [
   {
     date: "Mar 2023",
     label: "Baseline canopy assessment",
@@ -106,7 +106,11 @@ const DirectionIcon = ({ direction }: { direction: string }) => {
   return <Minus className="h-3.5 w-3.5" />;
 };
 
-const InflectionTimeline = () => {
+interface InflectionTimelineProps {
+  inflections?: InflectionPoint[];
+}
+
+const InflectionTimeline = ({ inflections = defaultInflections }: InflectionTimelineProps) => {
   const [selected, setSelected] = useState<number>(inflections.length - 1);
   const point = inflections[selected];
 
@@ -115,9 +119,9 @@ const InflectionTimeline = () => {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.45 }}
-      className="rounded-lg border border-border bg-card p-6"
+      className="rounded-lg border border-border bg-card p-4 sm:p-6"
     >
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">
             System Inflection Timeline
@@ -128,72 +132,76 @@ const InflectionTimeline = () => {
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
-          <span className="font-mono">Mar 2023 — Mar 2026</span>
+          <span className="font-mono">
+            {inflections[0]?.date} — {inflections[inflections.length - 1]?.date}
+          </span>
         </div>
       </div>
 
-      {/* Timeline track */}
-      <div className="relative mb-6">
-        {/* Line */}
-        <div className="absolute left-0 right-0 top-3 h-px bg-border" />
+      {/* Timeline track — horizontal scroll on mobile */}
+      <div className="relative mb-6 overflow-x-auto pb-2 scrollbar-none">
+        <div className="min-w-[500px]">
+          {/* Line */}
+          <div className="absolute left-0 right-0 top-3 h-px bg-border" />
 
-        {/* Points */}
-        <div className="relative flex justify-between">
-          {inflections.map((p, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className="group relative flex flex-col items-center"
-              style={{ flex: "1 1 0" }}
-            >
-              {/* Dot */}
-              <motion.div
-                className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors"
-                style={{
-                  borderColor:
-                    i === selected
-                      ? `hsl(${impactColors[p.impact]})`
-                      : "hsl(var(--border))",
-                  backgroundColor:
-                    i === selected
-                      ? `hsl(${impactColors[p.impact]} / 0.2)`
-                      : "hsl(var(--card))",
-                }}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.95 }}
+          {/* Points */}
+          <div className="relative flex justify-between">
+            {inflections.map((p, i) => (
+              <button
+                key={i}
+                onClick={() => setSelected(i)}
+                className="group relative flex flex-col items-center"
+                style={{ flex: "1 1 0" }}
               >
-                {p.impact === "critical" && (
-                  <AlertTriangle
-                    className="h-2.5 w-2.5"
-                    style={{ color: `hsl(${impactColors[p.impact]})` }}
-                  />
-                )}
-                {p.impact !== "critical" && (
-                  <div
-                    className="h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor:
-                        i <= selected
-                          ? `hsl(${impactColors[p.impact]})`
-                          : "hsl(var(--muted-foreground))",
-                      opacity: i <= selected ? 1 : 0.3,
-                    }}
-                  />
-                )}
-              </motion.div>
+                {/* Dot */}
+                <motion.div
+                  className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors"
+                  style={{
+                    borderColor:
+                      i === selected
+                        ? `hsl(${impactColors[p.impact]})`
+                        : "hsl(var(--border))",
+                    backgroundColor:
+                      i === selected
+                        ? `hsl(${impactColors[p.impact]} / 0.2)`
+                        : "hsl(var(--card))",
+                  }}
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {p.impact === "critical" && (
+                    <AlertTriangle
+                      className="h-2.5 w-2.5"
+                      style={{ color: `hsl(${impactColors[p.impact]})` }}
+                    />
+                  )}
+                  {p.impact !== "critical" && (
+                    <div
+                      className="h-2 w-2 rounded-full"
+                      style={{
+                        backgroundColor:
+                          i <= selected
+                            ? `hsl(${impactColors[p.impact]})`
+                            : "hsl(var(--muted-foreground))",
+                        opacity: i <= selected ? 1 : 0.3,
+                      }}
+                    />
+                  )}
+                </motion.div>
 
-              {/* Date label */}
-              <span
-                className={`mt-2 font-mono text-[8px] transition-colors sm:text-[9px] ${
-                  i === selected
-                    ? "text-foreground"
-                    : "text-muted-foreground/60"
-                }`}
-              >
-                {p.date}
-              </span>
-            </button>
-          ))}
+                {/* Date label */}
+                <span
+                  className={`mt-2 font-mono text-[8px] transition-colors sm:text-[9px] ${
+                    i === selected
+                      ? "text-foreground"
+                      : "text-muted-foreground/60"
+                  }`}
+                >
+                  {p.date}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -205,7 +213,7 @@ const InflectionTimeline = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
-          className="rounded-md border border-border bg-secondary/30 p-4"
+          className="rounded-md border border-border bg-secondary/30 p-3 sm:p-4"
         >
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span
@@ -228,7 +236,7 @@ const InflectionTimeline = () => {
           <h3 className="mb-2 font-display text-sm font-semibold text-foreground">
             {point.label}
           </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
             {point.description}
           </p>
         </motion.div>

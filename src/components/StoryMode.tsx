@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -12,7 +12,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-interface StoryStep {
+export interface StoryStep {
   id: string;
   phase: string;
   icon: React.ElementType;
@@ -22,7 +22,7 @@ interface StoryStep {
   accentColor: string;
 }
 
-const steps: StoryStep[] = [
+export const defaultSteps: StoryStep[] = [
   {
     id: "changed",
     phase: "What Changed",
@@ -129,18 +129,51 @@ const steps: StoryStep[] = [
   },
 ];
 
-const StoryMode = () => {
+interface StoryModeProps {
+  steps?: StoryStep[];
+}
+
+const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const containerRef = useRef<HTMLElement>(null);
   const step = steps[currentStep];
   const Icon = step.icon;
   const progress = ((currentStep + 1) / steps.length) * 100;
 
+  const goNext = useCallback(() => {
+    setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
+  }, [steps.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrentStep((s) => Math.max(0, s - 1));
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        goNext();
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        goPrev();
+      }
+    };
+
+    const el = containerRef.current;
+    if (el) {
+      el.addEventListener("keydown", handleKey);
+      return () => el.removeEventListener("keydown", handleKey);
+    }
+  }, [goNext, goPrev]);
+
   return (
     <motion.section
+      ref={containerRef}
+      tabIndex={0}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.4 }}
-      className="rounded-lg border border-border bg-card overflow-hidden"
+      className="rounded-lg border border-border bg-card overflow-hidden outline-none focus:ring-2 focus:ring-primary/30"
     >
       {/* Progress bar */}
       <div className="h-1 w-full bg-secondary">
@@ -152,7 +185,7 @@ const StoryMode = () => {
         />
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-5 flex items-center justify-between">
           <div>
@@ -182,13 +215,13 @@ const StoryMode = () => {
           </div>
         </div>
 
-        {/* Phase label */}
-        <div className="mb-4 flex flex-wrap gap-2">
+        {/* Phase labels — scrollable on mobile */}
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {steps.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setCurrentStep(i)}
-              className={`rounded-md px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
+              className={`shrink-0 rounded-md px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
                 i === currentStep
                   ? "bg-primary/15 text-primary"
                   : i < currentStep
@@ -212,7 +245,7 @@ const StoryMode = () => {
           >
             <div className="mb-4 flex items-center gap-3">
               <div
-                className="flex h-10 w-10 items-center justify-center rounded-lg"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: `hsl(${step.accentColor} / 0.15)` }}
               >
                 <Icon
@@ -220,7 +253,7 @@ const StoryMode = () => {
                   style={{ color: `hsl(${step.accentColor})` }}
                 />
               </div>
-              <h3 className="font-display text-base font-semibold text-foreground">
+              <h3 className="font-display text-sm sm:text-base font-semibold text-foreground">
                 {step.headline}
               </h3>
             </div>
@@ -230,7 +263,7 @@ const StoryMode = () => {
             </p>
 
             {step.keyFacts && (
-              <div className="space-y-2 rounded-md border border-border bg-secondary/30 p-4">
+              <div className="space-y-2 rounded-md border border-border bg-secondary/30 p-3 sm:p-4">
                 <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
                   Key facts
                 </span>
@@ -240,7 +273,7 @@ const StoryMode = () => {
                       className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
                       style={{ backgroundColor: `hsl(${step.accentColor})` }}
                     />
-                    <span className="text-sm text-muted-foreground">{fact}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">{fact}</span>
                   </div>
                 ))}
               </div>
@@ -251,7 +284,7 @@ const StoryMode = () => {
         {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
           <button
-            onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+            onClick={goPrev}
             disabled={currentStep === 0}
             className="flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
           >
@@ -259,14 +292,12 @@ const StoryMode = () => {
             Previous
           </button>
 
-          <span className="font-mono text-[10px] text-muted-foreground">
+          <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground">
             {step.phase}
           </span>
 
           <button
-            onClick={() =>
-              setCurrentStep(Math.min(steps.length - 1, currentStep + 1))
-            }
+            onClick={goNext}
             disabled={currentStep === steps.length - 1}
             className="flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-30 disabled:hover:bg-primary/10"
           >
@@ -274,6 +305,11 @@ const StoryMode = () => {
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
+
+        {/* Keyboard hint */}
+        <p className="mt-3 hidden sm:block text-center font-mono text-[9px] text-muted-foreground/50">
+          Use ← → arrow keys to navigate
+        </p>
       </div>
     </motion.section>
   );
