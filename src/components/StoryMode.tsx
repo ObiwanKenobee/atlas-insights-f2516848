@@ -234,7 +234,7 @@ const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
           ))}
         </div>
 
-        {/* Content */}
+        {/* Content — swipeable */}
         <AnimatePresence mode="wait">
           <motion.div
             key={step.id}
@@ -242,6 +242,14 @@ const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.15}
+            onDragEnd={(_e, info) => {
+              if (info.offset.x < -50) goNext();
+              else if (info.offset.x > 50) goPrev();
+            }}
+            style={{ touchAction: "pan-y" }}
           >
             <div className="mb-4 flex items-center gap-3">
               <div
