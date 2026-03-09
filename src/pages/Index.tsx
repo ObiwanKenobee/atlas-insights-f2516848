@@ -139,7 +139,7 @@ const Index = () => {
         location={insight?.location || "Nairobi Metro"}
         timeframe={insight?.timeframe || "Q2 2026 — Q4 2027"}
         scenario={insight?.scenario || "Baseline + Policy Options"}
-        systemStatus={insight?.system_status || "elevated"}
+        systemStatus={(insight?.system_status as "nominal" | "elevated" | "critical") || "elevated"}
       />
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
