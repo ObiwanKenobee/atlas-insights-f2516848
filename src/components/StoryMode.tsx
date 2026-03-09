@@ -279,7 +279,10 @@ const StoryMode = ({ steps = defaultSteps, autoPlayInterval = 8000 }: StoryModeP
           {steps.map((s, i) => (
             <button
               key={s.id}
-              onClick={() => setCurrentStep(i)}
+              onClick={() => {
+                setIsAutoPlaying(false);
+                setCurrentStep(i);
+              }}
               className={`shrink-0 rounded-md px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
                 i === currentStep
                   ? "bg-primary/15 text-primary"
