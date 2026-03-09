@@ -171,10 +171,12 @@ const StoryMode = ({ steps = defaultSteps, autoPlayInterval = 8000 }: StoryModeP
   }, []);
 
   const goNext = useCallback(() => {
+    setIsAutoPlaying(false);
     setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
   }, [steps.length]);
 
   const goPrev = useCallback(() => {
+    setIsAutoPlaying(false);
     setCurrentStep((s) => Math.max(0, s - 1));
   }, []);
 
