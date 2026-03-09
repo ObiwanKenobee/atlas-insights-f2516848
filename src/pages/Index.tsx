@@ -95,14 +95,12 @@ const Index = () => {
   }));
 
   const inflections = insightData?.inflectionPoints.map((inflection) => ({
-    id: inflection.event_id,
     date: inflection.event_date,
     label: inflection.label,
     description: inflection.description,
     impact: inflection.impact as "low" | "medium" | "high" | "critical",
-    metricLabel: inflection.metric_label,
-    metricValue: inflection.metric_value,
-    trend: inflection.trend as "up" | "down" | "stable",
+    direction: inflection.trend as "up" | "down" | "stable",
+    metric: `${inflection.metric_label}: ${inflection.metric_value}`,
   }));
 
   const scenarios = insightData?.scenarios.map((scenario) => ({
