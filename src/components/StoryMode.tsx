@@ -227,21 +227,48 @@ const StoryMode = ({ steps = defaultSteps, autoPlayInterval = 8000 }: StoryModeP
             </p>
           </div>
 
-          {/* Step indicators */}
-          <div className="hidden items-center gap-1 sm:flex">
-            {steps.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => setCurrentStep(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentStep
-                    ? "w-6 bg-primary"
-                    : i < currentStep
-                    ? "w-2 bg-primary/40"
-                    : "w-2 bg-secondary"
-                }`}
-              />
-            ))}
+          <div className="flex items-center gap-3">
+            {/* Auto-play toggle */}
+            <button
+              onClick={toggleAutoPlay}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                isAutoPlaying
+                  ? "bg-primary/15 text-primary"
+                  : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+              }`}
+            >
+              {isAutoPlaying ? (
+                <>
+                  <Pause className="h-3 w-3" />
+                  <span className="hidden sm:inline">Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3" />
+                  <span className="hidden sm:inline">Auto-play</span>
+                </>
+              )}
+            </button>
+
+            {/* Step indicators */}
+            <div className="hidden items-center gap-1 sm:flex">
+              {steps.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setCurrentStep(i);
+                    setIsAutoPlaying(false);
+                  }}
+                  className={`h-2 rounded-full transition-all ${
+                    i === currentStep
+                      ? "w-6 bg-primary"
+                      : i < currentStep
+                      ? "w-2 bg-primary/40"
+                      : "w-2 bg-secondary"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
