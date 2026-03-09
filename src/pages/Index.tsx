@@ -108,7 +108,7 @@ const Index = () => {
     description: scenario.description,
     keyMetric: scenario.key_metric,
     metricLabel: scenario.metric_label,
-    trend: scenario.trend as "up" | "down" | "stable",
+    trend: (scenario.trend === "stable" ? "neutral" : scenario.trend) as "up" | "down" | "neutral",
     highlight: scenario.highlight,
   }));
 
