@@ -10,6 +10,8 @@ import {
   Lightbulb,
   ShieldCheck,
   HelpCircle,
+  Play,
+  Pause,
 } from "lucide-react";
 
 export interface StoryStep {
@@ -131,20 +133,50 @@ export const defaultSteps: StoryStep[] = [
 
 interface StoryModeProps {
   steps?: StoryStep[];
+  autoPlayInterval?: number;
 }
 
-const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
+const StoryMode = ({ steps = defaultSteps, autoPlayInterval = 8000 }: StoryModeProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const step = steps[currentStep];
   const Icon = step.icon;
   const progress = ((currentStep + 1) / steps.length) * 100;
 
+  // Auto-play logic
+  useEffect(() => {
+    if (isAutoPlaying) {
+      autoPlayRef.current = setInterval(() => {
+        setCurrentStep((s) => {
+          if (s >= steps.length - 1) {
+            setIsAutoPlaying(false);
+            return s;
+          }
+          return s + 1;
+        });
+      }, autoPlayInterval);
+    }
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isAutoPlaying, autoPlayInterval, steps.length]);
+
+  const toggleAutoPlay = useCallback(() => {
+    setIsAutoPlaying((prev) => !prev);
+  }, []);
+
   const goNext = useCallback(() => {
+    setIsAutoPlaying(false);
     setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
   }, [steps.length]);
 
   const goPrev = useCallback(() => {
+    setIsAutoPlaying(false);
     setCurrentStep((s) => Math.max(0, s - 1));
   }, []);
 
@@ -197,21 +229,48 @@ const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
             </p>
           </div>
 
-          {/* Step indicators */}
-          <div className="hidden items-center gap-1 sm:flex">
-            {steps.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => setCurrentStep(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === currentStep
-                    ? "w-6 bg-primary"
-                    : i < currentStep
-                    ? "w-2 bg-primary/40"
-                    : "w-2 bg-secondary"
-                }`}
-              />
-            ))}
+          <div className="flex items-center gap-3">
+            {/* Auto-play toggle */}
+            <button
+              onClick={toggleAutoPlay}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                isAutoPlaying
+                  ? "bg-primary/15 text-primary"
+                  : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+              }`}
+            >
+              {isAutoPlaying ? (
+                <>
+                  <Pause className="h-3 w-3" />
+                  <span className="hidden sm:inline">Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3" />
+                  <span className="hidden sm:inline">Auto-play</span>
+                </>
+              )}
+            </button>
+
+            {/* Step indicators */}
+            <div className="hidden items-center gap-1 sm:flex">
+              {steps.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => {
+                    setCurrentStep(i);
+                    setIsAutoPlaying(false);
+                  }}
+                  className={`h-2 rounded-full transition-all ${
+                    i === currentStep
+                      ? "w-6 bg-primary"
+                      : i < currentStep
+                      ? "w-2 bg-primary/40"
+                      : "w-2 bg-secondary"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
@@ -220,7 +279,10 @@ const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
           {steps.map((s, i) => (
             <button
               key={s.id}
-              onClick={() => setCurrentStep(i)}
+              onClick={() => {
+                setIsAutoPlaying(false);
+                setCurrentStep(i);
+              }}
               className={`shrink-0 rounded-md px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider transition-colors ${
                 i === currentStep
                   ? "bg-primary/15 text-primary"
