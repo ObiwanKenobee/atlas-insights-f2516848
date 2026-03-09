@@ -133,14 +133,42 @@ export const defaultSteps: StoryStep[] = [
 
 interface StoryModeProps {
   steps?: StoryStep[];
+  autoPlayInterval?: number;
 }
 
-const StoryMode = ({ steps = defaultSteps }: StoryModeProps) => {
+const StoryMode = ({ steps = defaultSteps, autoPlayInterval = 8000 }: StoryModeProps) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const containerRef = useRef<HTMLElement>(null);
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const step = steps[currentStep];
   const Icon = step.icon;
   const progress = ((currentStep + 1) / steps.length) * 100;
+
+  // Auto-play logic
+  useEffect(() => {
+    if (isAutoPlaying) {
+      autoPlayRef.current = setInterval(() => {
+        setCurrentStep((s) => {
+          if (s >= steps.length - 1) {
+            setIsAutoPlaying(false);
+            return s;
+          }
+          return s + 1;
+        });
+      }, autoPlayInterval);
+    }
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isAutoPlaying, autoPlayInterval, steps.length]);
+
+  const toggleAutoPlay = useCallback(() => {
+    setIsAutoPlaying((prev) => !prev);
+  }, []);
 
   const goNext = useCallback(() => {
     setCurrentStep((s) => Math.min(steps.length - 1, s + 1));
