@@ -10,6 +10,8 @@ import {
   Lightbulb,
   ShieldCheck,
   HelpCircle,
+  Play,
+  Pause,
 } from "lucide-react";
 
 export interface StoryStep {
